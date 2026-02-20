@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.github.gianlucampos'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //Java Mail
+    implementation "com.sun.mail:jakarta.mail:2.0.1"
+
+    // Google Auth Library para OAuth2
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.14.0'
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
+
+    // SLF4J
+    implementation "org.slf4j:slf4j-api:2.0.9"
+    runtimeOnly "org.slf4j:slf4j-simple:2.0.9"
+}
+
+shadowJar {
+    archiveFileName = 'app-fat.jar'
+    mergeServiceFiles()
+}
+
+tasks.build {
+    dependsOn shadowJar
+}
