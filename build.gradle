@@ -23,6 +23,9 @@ dependencies {
     // Google Auth Library for OAuth2
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.14.0'
 
+    // AWS Lambda
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.2'
+
     // Jackson for JSON
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.2'
 

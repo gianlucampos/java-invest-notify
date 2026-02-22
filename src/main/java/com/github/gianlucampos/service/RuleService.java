@@ -38,9 +38,9 @@ public class RuleService {
     private final BrApiRepository brApiRepository;
 
     public void verifyAll() {
-        verifyTickersToSell(holdingsProvider.stocks(), TickerTypeEnum.STOCK);
-        verifyTickersToSell(holdingsProvider.fiis(), TickerTypeEnum.FII);
-        verifyTickersToSell(holdingsProvider.reits(), TickerTypeEnum.REIT);
+        verifyTickersToSell(holdingsProvider.getTickerByGroup(TickerTypeEnum.STOCK), TickerTypeEnum.STOCK);
+        verifyTickersToSell(holdingsProvider.getTickerByGroup(TickerTypeEnum.FII), TickerTypeEnum.FII);
+        verifyTickersToSell(holdingsProvider.getTickerByGroup(TickerTypeEnum.REIT), TickerTypeEnum.REIT);
     }
 
     private void verifyTickersToSell(List<Ticker> tickers, TickerTypeEnum tickerGroup) {
@@ -54,7 +54,7 @@ public class RuleService {
         };
 
         List<Ticker> tickersWithMarketValue = apiRepository.getTickersFromList(symbols);
-        arrangeTickerWithMakertValue(tickersWithMarketValue, tickers);
+        arrangeTickerWithMarketValue(tickersWithMarketValue, tickers);
 
         BigDecimal walletPriceInvested = tickers.stream()
             .map(Ticker::getAveragePrice)
@@ -76,7 +76,7 @@ public class RuleService {
         }
     }
 
-    private void arrangeTickerWithMakertValue(List<Ticker> tickersWithMarketValue, List<Ticker> reits) {
+    private void arrangeTickerWithMarketValue(List<Ticker> tickersWithMarketValue, List<Ticker> reits) {
         Map<String, Ticker> marketPriceMap = tickersWithMarketValue.stream()
             .collect(Collectors.toMap(Ticker::getSymbol, Function.identity()));
 

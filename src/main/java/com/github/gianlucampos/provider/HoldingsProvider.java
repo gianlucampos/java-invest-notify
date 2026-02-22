@@ -24,21 +24,9 @@ public class HoldingsProvider {
         }
     }
 
-    public List<Ticker> fiis() {
+    public List<Ticker> getTickerByGroup(TickerTypeEnum tickerGroup) {
         return tickers.stream()
-            .filter(t -> t.getTickerType() == TickerTypeEnum.FII)
-            .toList();
-    }
-
-    public List<Ticker> stocks() {
-        return tickers.stream()
-            .filter(t -> t.getTickerType() == TickerTypeEnum.STOCK)
-            .toList();
-    }
-
-    public List<Ticker> reits() {
-        return tickers.stream()
-            .filter(t -> t.getTickerType() == TickerTypeEnum.REIT)
+            .filter(t -> t.getTickerType() == tickerGroup)
             .toList();
     }
 }
