@@ -20,8 +20,11 @@ dependencies {
     //Java Mail
     implementation "com.sun.mail:jakarta.mail:2.0.1"
 
-    // Google Auth Library para OAuth2
+    // Google Auth Library for OAuth2
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.14.0'
+
+    // Jackson for JSON
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.2'
 
     // Lombok
     compileOnly "org.projectlombok:lombok:1.18.30"
