@@ -1,9 +1,5 @@
 package com.github.gianlucampos.service;
 
-//    Pegar ação da base de dados (planilha ou json)
-//    Buscar preço da ação na api (brapi ou stockapi)
-//    Agrupar ação que está com valor acima do preço medio
-
 //   Regra de ouro:
 //    +100% de lucro (dobrou) → vende 50% das ações
 //    Você recupera totalmente o capital investido.
@@ -12,11 +8,13 @@ package com.github.gianlucampos.service;
 
 //valorInvestido = precoMedio * quantidade
 //valorTotalCarteira = soma de todos valores investidos dos ativos (valorInvestido de todos)
-//pesoEQIX = valorAtualEQIX / valorTotalCarteira
+//pesoStock = valorAtualStock / valorTotalCarteira
 //Se for maior que 10% da carteira enviar email
 
 import com.github.gianlucampos.models.Ticker;
+import com.github.gianlucampos.models.TickerTypeEnum;
 import com.github.gianlucampos.provider.HoldingsProvider;
+import com.github.gianlucampos.repository.BrApiRepository;
 import com.github.gianlucampos.repository.UsaApiRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,21 +35,33 @@ public class RuleService {
     private final GmailService gmailService;
     private final HoldingsProvider holdingsProvider;
     private final UsaApiRepository usaApiRepository;
+    private final BrApiRepository brApiRepository;
 
-    public void verifyTickersToSell() {
-        List<Ticker> reits = holdingsProvider.reits();
-        List<String> symbols = reits.stream()
+    public void verifyAll() {
+        verifyTickersToSell(holdingsProvider.stocks(), TickerTypeEnum.STOCK);
+        verifyTickersToSell(holdingsProvider.fiis(), TickerTypeEnum.FII);
+        verifyTickersToSell(holdingsProvider.reits(), TickerTypeEnum.REIT);
+    }
+
+    private void verifyTickersToSell(List<Ticker> tickers, TickerTypeEnum tickerGroup) {
+        List<String> symbols = tickers.stream()
             .map(Ticker::getSymbol)
             .toList();
 
-        List<Ticker> tickersWithMarketValue = usaApiRepository.getTickersFromList(symbols);
-        arrangeTickerWithMakertValue(tickersWithMarketValue, reits);
+        var apiRepository = switch (tickerGroup) {
+            case TickerTypeEnum.FII, TickerTypeEnum.STOCK -> brApiRepository;
+            case TickerTypeEnum.REIT -> usaApiRepository;
+        };
 
-        BigDecimal walletPriceInvested = reits.stream()
+        List<Ticker> tickersWithMarketValue = apiRepository.getTickersFromList(symbols);
+        arrangeTickerWithMakertValue(tickersWithMarketValue, tickers);
+
+        BigDecimal walletPriceInvested = tickers.stream()
             .map(Ticker::getAveragePrice)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        for (Ticker ticker : reits) {
+        log.info("GROUP: {}", tickerGroup.name());
+        for (Ticker ticker : tickers) {
             double walletPercentage = getWalletPercentage(walletPriceInvested, ticker);
             double targetPrice = ticker.getBuyPrice().doubleValue() * INCOME_PLUS_VALUE_TO_SELL;
 
@@ -61,7 +71,7 @@ public class RuleService {
             if (isIncomeOkToSell && isWeightOkToSell) {
                 gmailService.sendEmail(ticker.getSymbol(), ticker.getMarketPrice());
             }
-            log.info("\nSTOCK: {} | MARKET PRICE: {} | BUY PRICE: {} |  WALLET PERCENTAGE: {}%\n",
+            log.info("STOCK: {} | MARKET PRICE: {} | BUY PRICE: {} |  WALLET PERCENTAGE: {}%",
                 ticker.getSymbol(), ticker.getMarketPrice(), ticker.getBuyPrice(), walletPercentage);
         }
     }
