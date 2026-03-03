@@ -11,9 +11,9 @@ public class NotifyEmailInvestment implements RequestHandler<Object, String> {
         try {
             context.getLogger().log("Starting application...");
             AppConfig.ruleService().verifyAll();
-            return "Portfolio updated successfully!";
+            return "NotifyEmailInvestment function ran successfully!";
         } catch (Exception ex) {
-            context.getLogger().log("Update failed: " + ex.getMessage());
+            context.getLogger().log("Execution failed: " + ex.getMessage());
             return "Execution failed: " + ex.getMessage();
         }
     }
