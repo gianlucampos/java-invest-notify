@@ -19,10 +19,12 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
     private final HttpClient client;
     private final ObjectMapper mapper;
     private final String baseUrl;
+    private final String token;
 
 
-    public UsaApiRepositoryImpl(String baseUrl) {
+    public UsaApiRepositoryImpl(String baseUrl, String token) {
         this.baseUrl = baseUrl;
+        this.token = token;
         this.mapper = new ObjectMapper();
         this.client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
@@ -33,10 +35,13 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
         return tickersForSearch.parallelStream()
             .map(symbol -> {
                 try {
-                    var url = baseUrl.concat(symbol);
+                    String symbolQuery = "?symbol=".concat(symbol);
+                    String tokenQuery = "&token=".concat(token);
+                    String formatedURL = baseUrl.concat(symbolQuery).concat(tokenQuery);
+
                     var request = HttpRequest.newBuilder()
                         .GET()
-                        .uri(URI.create(url))
+                        .uri(URI.create(formatedURL))
                         .build();
 
                     var response = client.send(request, BodyHandlers.ofString());
@@ -47,8 +52,8 @@ public class UsaApiRepositoryImpl implements UsaApiRepository {
                     var root = mapper.readTree(response.body());
 
                     return Ticker.builder()
-                        .symbol(root.get("Ticker").asText())
-                        .marketPrice(BigDecimal.valueOf(root.get("Price").asDouble()))
+                        .symbol(symbol)
+                        .marketPrice(BigDecimal.valueOf(root.get("c").asDouble()))
                         .build();
 
                 } catch (InterruptedException ex) {

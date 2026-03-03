@@ -28,6 +28,7 @@ public class AppConfig {
         String emailReceiver = System.getenv("EMAIL_RECEIVER");
         String portfolioJson = System.getenv("PORTFOLIO_JSON");
         String urlUsaApi = System.getenv("USA_API_URL");
+        String urlUsaToken = System.getenv("USA_API_TOKEN");
         String urlBrApi = System.getenv("BR_API_URL");
         String token = System.getenv("BR_API_TOKEN");
 
@@ -35,7 +36,7 @@ public class AppConfig {
         gmailNotifier = new GmailNotifier(emailSender, emailReceiver, gmailOAuth);
         gmailService = new GmailService(gmailNotifier);
         holdingsProvider = new HoldingsProvider(portfolioJson);
-        usaApiRepository = new UsaApiRepositoryImpl(urlUsaApi);
+        usaApiRepository = new UsaApiRepositoryImpl(urlUsaApi, urlUsaToken);
         brApiRepository = new BrApiRepositoryImpl(urlBrApi, token);
         ruleService = new RuleService(gmailService, holdingsProvider, usaApiRepository, brApiRepository);
     }
